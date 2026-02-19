@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Panier</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --danger-color: #ef4444;
+            --like-color: #e11d48;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 24px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .cart-items {
+            list-style: none;
+            padding: 0;
+            flex-grow: 1;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 24px 32px;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.2s;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .item-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 24px;
+            background-color: #f0f0f0;
+        }
+
+        .item-details {
+            flex-grow: 1;
+        }
+
+        .item-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+        }
+
+        .item-price {
+            font-size: 16px;
+            color: var(--text-light);
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .qty-btn {
+            background: none;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .qty-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .qty-value {
+            width: 32px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .heart-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: #d1d5db;
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .heart-btn.liked svg {
+            fill: var(--like-color);
+            stroke: var(--like-color);
+            transform: scale(1.1);
+        }
+
+        .remove-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-light);
+            transition: stroke 0.2s;
+        }
+
+        .remove-btn:hover svg {
+            stroke: var(--danger-color);
+        }
+
+        .cart-summary {
+            background-color: #f9fafb;
+            padding: 24px 32px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .total-label {
+            font-size: 18px;
+            color: var(--text-light);
+        }
+
+        .total-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .empty-message {
+            padding: 60px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 18px;
+        }
+
+        /* Animation for removal */
+        .fade-out {
+            animation: fadeOut 0.4s forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Mon Panier</h1>
+            <span id="item-count" style="color: var(--text-light);">3 articles</span>
+        </header>
+
+        <ul class="cart-items" id="cart-list">
+            <!-- Les articles seront injectés ici par JS -->
+        </ul>
+
+        <div class="cart-summary">
+            <span class="total-label">Total:</span>
+            <span class="total-price" id="total-price">0.00 €</span>
+        </div>
+    </div>
+
+    <script>
+        // Données initiales du panier
+        const initialData = [
+            {
+                id: 1,
+                name: "Casque Audio Sans Fil",
+                price: 249.99,
+                quantity: 1,
+                liked: false,
+                image: "https://image.qwenlm.ai/public_source/fc44dc56-b82b-442d-abfa-c569ce3028ab/19447341d-9f44-483b-95b8-d683d86bd1c9.png"
+            },
+            {
+                id: 2,
+                name: "Montre Connectée Sport",
+                price: 129.50,
+                quantity: 1,
+                liked: true,
+                image: "https://image.qwenlm.ai/public_source/fc44dc56-b82b-442d-abfa-c569ce3028ab/1c69c690d-8f38-4f5e-8ef3-e3720195eadb.png"
+            },
+            {
+                id: 3,
+                name: "Baskets Urbaines",
+                price: 89.00,
+                quantity: 2,
+                liked: false,
+                image: "https://image.qwenlm.ai/public_source/fc44dc56-b82b-442d-abfa-c569ce3028ab/13d73e3bc-1301-4229-98ed-9d77a95f09e7.png"
+            }
+        ];
+
+        // État de l'application
+        let cartItems = [...initialData];
+
+        // Éléments du DOM
+        const cartListEl = document.getElementById('cart-list');
+        const totalPriceEl = document.getElementById('total-price');
+        const itemCountEl = document.getElementById('item-count');
+
+        // Icônes SVG
+        const heartIconSVG = `
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        `;
+
+        const trashIconSVG = `
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+        `;
+
+        // Fonction pour formater le prix
+        const formatPrice = (price) => {
+            return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+        };
+
+        // Fonction de rendu principal
+        function renderCart() {
+            cartListEl.innerHTML = '';
+            let total = 0;
+            let count = 0;
+
+            if (cartItems.length === 0) {
+                cartListEl.innerHTML = '<div class="empty-message">Votre panier est vide.</div>';
+                totalPriceEl.textContent = formatPrice(0);
+                itemCountEl.textContent = '0 article';
+                return;
+            }
+
+            cartItems.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                count += item.quantity;
+
+                const li = document.createElement('li');
+                li.className = 'cart-item';
+                li.dataset.id = item.id;
+
+                li.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="item-image">
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">${formatPrice(item.price)}</div>
+                    </div>
+                    <div class="item-actions">
+                        <div class="quantity-control">
+                            <button class="qty-btn qty-decrease" data-id="${item.id}">-</button>
+                            <span class="qty-value">${item.quantity}</span>
+                            <button class="qty-btn qty-increase" data-id="${item.id}">+</button>
+                        </div>
+                        <button class="action-btn heart-btn ${item.liked ? 'liked' : ''}" data-id="${item.id}">
+                            ${heartIconSVG}
+                        </button>
+                        <button class="action-btn remove-btn" data-id="${item.id}">
+                            ${trashIconSVG}
+                        </button>
+                    </div>
+                `;
+                cartListEl.appendChild(li);
+
+                // Ajouter les event listeners avec addEventListener (meilleure pratique)
+                const decreaseBtn = li.querySelector('.qty-decrease');
+                const increaseBtn = li.querySelector('.qty-increase');
+                const heartBtn = li.querySelector('.heart-btn');
+                const removeBtn = li.querySelector('.remove-btn');
+
+                decreaseBtn.addEventListener('click', () => updateQuantity(item.id, -1));
+                increaseBtn.addEventListener('click', () => updateQuantity(item.id, 1));
+                heartBtn.addEventListener('click', () => toggleLike(item.id));
+                removeBtn.addEventListener('click', () => removeItem(item.id));
+            });
+
+            totalPriceEl.textContent = formatPrice(total);
+            itemCountEl.textContent = `${count} article${count > 1 ? 's' : ''}`;
+        }
+
+        // Actions
+        function updateQuantity(id, change) {
+            const item = cartItems.find(i => i.id === id);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity < 1) item.quantity = 1;
+                renderCart();
+            }
+        }
+
+        function removeItem(id) {
+            const itemEl = document.querySelector(`.cart-item[data-id="${id}"]`);
+            if (itemEl) {
+                // Animation de suppression
+                itemEl.classList.add('fade-out');
+                setTimeout(() => {
+                    cartItems = cartItems.filter(i => i.id !== id);
+                    renderCart();
+                }, 400);
+            }
+        }
+
+        function toggleLike(id) {
+            const item = cartItems.find(i => i.id === id);
+            if (item) {
+                item.liked = !item.liked;
+                renderCart();
+            }
+        }
+
+        // Initialisation
+        renderCart();
+
+    </script>
+</body>
+</html>
+
